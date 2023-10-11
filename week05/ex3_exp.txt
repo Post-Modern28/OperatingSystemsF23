@@ -1,0 +1,5 @@
+With a single thread all computations are done on a single core. When doing more threads. some of them are being done in parallel because of multiprocessing. 
+The program outperforms ex4.c, because it doesn't need to synchronize between threads. The only thing that remained unknown to me is why its peak is not 4 threads like for ex4, because no more than 4 processes may run in parallel on my device.
+Yet, the time keeps decreasing approximately till m=50-80 (I ran it with m=150, 200, 1000 and 2000 and the performance was decreasing). 
+Probably, that's because function itself requiers a lot of data to load, so threads help to not waste time while waitig that data, making a process closer to perfectly scalar. 
+But then the time needed to switch between the processes starts outweighing this benefit.
