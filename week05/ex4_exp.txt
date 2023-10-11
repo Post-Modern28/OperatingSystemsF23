@@ -1,0 +1,4 @@
+With a single thread the computation is quite slow, since 1 processor is used. When 2 theads are created, 2 cores start working in parallel, so computation time reduces approximately twice.
+When creating 4 threads, computation time again reduces twice, because program usese 4 cores now.
+When creating more threads, there are no more cores left, so several threads start working on the same core. This does not only not increase the computation time, but also reduces it because of time needed to switch between those threads.
+That's why program with 100 threads works worse than a program with 10 threads.
