@@ -7,57 +7,52 @@
 #include <fcntl.h>
 #include <string.h>
 
-#define PID_FILE "/var/run/agent.pid"
-#define TEXT_FILE "text.txt"
 
-void sigusr1_handler(int sig) {
-    char buffer[1024];
-    FILE *fp = fopen(TEXT_FILE, "r");
-    if (fp == NULL) {
-        perror("Error opening file");
-        return;
+void sig_handler(int sig) {
+    if (sig == SIGUSR1) {
+        FILE *file = fopen("text.txt", "r");
+        if (file == NULL) {
+            printf("Error: Unable to open text file.\n");
+            exit(1);
+        }
+        char buffer[256];
+        while (fgets(buffer, sizeof(buffer), file)) {
+            printf("%s", buffer);
+        }
+        fclose(file);
+    } else if (sig == SIGUSR2) {
+        printf("Process terminating...\n");
+        exit(0);
     }
-    while (fgets(buffer, sizeof(buffer), fp)) {
-        printf("%s", buffer);
-    }
-    fclose(fp);
-}
-
-void sigusr2_handler(int sig) {
-    printf("Process terminating...\n");
-    exit(0);
 }
 
 int main() {
-
-    int fd = open(PID_FILE, O_WRONLY | O_CREAT | O_EXCL, 0644);
-    if (fd == -1) {
-        perror("Error creating PID file");
+    // Write PID to file
+    FILE *pid_file = fopen("/var/run/agent.pid", "w");
+    if (pid_file == NULL) {
+        printf("Error: Unable to create PID file.\n");
         exit(1);
     }
-    char pid_str[16];
-    sprintf(pid_str, "%d\n", getpid());
-    write(fd, pid_str, strlen(pid_str));
-    close(fd);
+    fprintf(pid_file, "%d", getpid());
+    fclose(pid_file);
 
-    FILE *fp = fopen(TEXT_FILE, "r");
-    if (fp == NULL) {
-        perror("Error opening file");
+    // Set signal handlers
+    signal(SIGUSR1, sig_handler);
+    signal(SIGUSR2, sig_handler);
+
+    FILE *file = fopen("text.txt", "r");
+    if (file == NULL) {
+        printf("Error: Unable to open text file.\n");
         exit(1);
     }
-    char buffer[1024];
-    while (fgets(buffer, sizeof(buffer), fp)) {
+    char buffer[256];
+    while (fgets(buffer, sizeof(buffer), file)) {
         printf("%s", buffer);
     }
-    fclose(fp);
-
-    signal(SIGUSR1, sigusr1_handler);
-    signal(SIGUSR2, sigusr2_handler);
-
+    fclose(file);
     while (1) {
         sleep(1);
     }
 
     return 0;
 }
-
