@@ -1,0 +1,12 @@
+First fit:
+Execution time: 0.010000 seconds
+Throughput: 5500.000000 queries/sec
+Best fit:
+Execution time: 0.808000 seconds
+Throughput: 68.069307 queries/sec
+Worst fit:
+Execution time: 0.804000 seconds
+Throughput: 68.407960 queries/sec
+
+Conclusions: 
+first fit is the most efficient in terms of runtime, best fit and worst fit are on the same level and really far away from first fit runtime
