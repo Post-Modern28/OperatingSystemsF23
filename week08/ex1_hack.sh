@@ -14,10 +14,9 @@ start="0x$start"
 end="0x$end"
 
 
-#pass=$(sudo xxd -s $start -l $end /proc/$pid/mem | grep "pass:")
 pass=$(sudo xxd -s $start -l $(("$end-$start")) /proc/$pid/mem | grep pass)
 if [ -z "$pass" ]; then
-    echo "Failed to extract the password."
+    echo "Password not found"
     sudo pkill ex1
     exit 1
 fi
