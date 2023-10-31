@@ -1,1 +1,1 @@
-Using vmstat 1 it was noticed that while program runs, the amount of free memory decreases, however si and so remain to be 0.
+Using vmstat 1 it was noticed that while program runs, the amount of free memory decreases, however si and so remain to be 0. Probably, it needs to allocate way more than 100MB to invoke processes swapping.
