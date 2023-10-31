@@ -1,0 +1,1 @@
+Using vmstat 1 it was noticed that while program runs, the amount of free memory decreases, however si and so remain to be 0.
