@@ -6,71 +6,51 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <signal.h>
+#include "pte.h"
 
-#define PAGES 100
-#define FRAMES 20
-#define PAGE_SIZE 8
-#define PAGE_TABLE_SIZE (PAGES * sizeof(struct PTE))
 
-struct PTE{
-    bool valid;
-    int frame;
-    bool dirty;
-    int referenced;
-};
+PTE* page_table;
 
-char disk[PAGES][PAGE_SIZE];
-char RAM[FRAMES][PAGE_SIZE];
-struct PTE *page_table;
 
-void handle_signal(int sig) {
-    int page_num = sig - SIGUSR1;
-    struct PTE *pte = &page_table[page_num];
-    if (!pte->valid) {
-        int i;
-        for (i = 0; i < FRAMES; i++) {
-            if (page_table[i].valid && page_table[i].frame == pte->frame) {
-                if (page_table[i].dirty) {
-                    memcpy(&disk[pte->frame], &RAM[i], PAGE_SIZE);
-                    printf("Page %d written to disk\n", i);
-                }
-                page_table[i].valid = false;
-                page_table[i].frame = -1;
-                break;
-            }
-        }
-        memcpy(&RAM[i], &disk[page_num], PAGE_SIZE);
-        printf("Page %d loaded into frame %d\n", page_num, i);
-        pte->valid = true;
-        pte->frame = i;
-        pte->dirty = false;
-    } else {
-        pte->referenced = 1;
+int main(int argc, char *argv[]) {
+ 	int PAGE_SIZE = atoi(argv[1]);
+ 	pid_t pager_id = atoi(argv[argc-1]);
+ 	int fd;
+ 	
+ 	fd = open("/tmp/ex2/pagetable", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+ 	page_table = (PTE*) mmap(NULL, sizeof(PTE) * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+ 	
+ 	
+	char* str = argv[2];
+    char* command = strtok(str, " "); 
+
+    while (command != NULL) {
+        char operation_type = command[0];
+        int page_num = atoi(&command[1]);
+ 		if (operation_type == 'W'){
+ 				page_table[page_num].dirty = true;
+ 			}
+ 		if (!page_table[page_num].valid){
+ 			printf("Page %d is not loaded in RAM\n", page_num);
+ 			
+ 			page_table[page_num].referenced = 1;
+ 			
+ 			kill(pager_id, SIGUSR1);
+ 		}
+ 		else{
+ 			printf("Page %d is already loaded in RAM\n", page_num);
+ 		}
+        command = strtok(NULL, " ");
+        sleep(1);
     }
-}
-
-int main() {
-    int i, fd;
-    srand(228);
-    for (i = 0; i < PAGES; i++) {
-        sprintf(disk[i], "Page %02d", i);
-    }
-    fd = open("/tmp/ex2/pagetable", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-    ftruncate(fd, PAGE_TABLE_SIZE);
-    page_table = mmap(NULL, PAGE_TABLE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    close(fd);
-    for (i = 0; i < PAGES; i++) {
-        page_table[i].valid = false;
-        page_table[i].frame = -1;
-        page_table[i].dirty = false;
-        page_table[i].referenced = 0;
-    }
-    struct sigaction sa;
-    memset(&sa, 0, sizeof(sa));
-    sa.sa_handler = handle_signal;
-    sigaction(SIGUSR1, &sa, NULL);
-    while (true) {
-        pause();
-    }
+ 	for (int i = 0; i < argc-1; i++){
+ 		printf("%s", argv[i]);
+ 		char* command = argv[i];
+ 		
+ 	
+ 	}
+ 	close(fd);
+ 	
+    
 }
 
