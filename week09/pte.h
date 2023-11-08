@@ -7,6 +7,8 @@ typedef struct PTE{
     int frame;
     bool dirty;
     int referenced;
+    unsigned int reference_count; // for nfu algorithm
+    unsigned long long count; // for aging algorithm
 } PTE;
 
 #endif

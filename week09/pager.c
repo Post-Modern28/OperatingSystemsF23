@@ -18,26 +18,34 @@ char** RAM;
 
 PTE* page_table;
 int RAM_load = 0;
+
 int (*search_function)(PTE* page_table);
+
+
 void update_page_on_disk(int page_num){
 	DISK[page_num][0] = 'U';
 } 
 
+
 void load_on_RAM(int cell,int page_num){
+	int mmu_pid = page_table[page_num].referenced;
 	page_table[page_num].frame = cell;
 	page_table[page_num].valid = true;
-	kill(page_table[page_num].referenced, SIGUSR1);
 	page_table[page_num].referenced = 0;
+	kill(mmu_pid, SIGUSR2);
 }
+ 
  
 void swap_from_RAM(int cell, int page_num){
 	page_table[page_num].frame = -1;
 	page_table[page_num].valid = false;
+	page_table[page_num].reference_count = 0;
     if (page_table[page_num].dirty){
     	update_page_on_disk(page_num);
     	page_table[page_num].dirty = false;
     } 
 }
+
 
 int random_pick(PTE* page_table){
 		int rand_idx = rand() % FRAME_SIZE;
@@ -48,6 +56,31 @@ int random_pick(PTE* page_table){
 				
 		}
 	}
+	
+	
+int nfu(PTE* page_table){
+	int min_ref_num, indx;
+	for (int i = 0; i < PAGE_SIZE; i++){
+		if (page_table[i].valid && page_table[i].reference_count < min_ref_num){
+			min_ref_num = page_table[i].reference_count;
+			indx = i;
+		}
+	}
+	return indx;
+}	
+
+int aging(PTE* page_table){
+	int min_age, indx;
+	for (int i = 0; i < PAGE_SIZE; i++){
+		if (page_table[i].valid && page_table[i].count < min_age){
+			min_age = page_table[i].count;
+			indx = i;
+		}
+	}
+	return indx;
+}
+
+	
 void sigusr1_handler(int signo) {
     for (int i = 0; i < PAGE_SIZE; i++){
     	if (page_table[i].referenced && !page_table[i].valid){
@@ -67,15 +100,26 @@ void sigusr1_handler(int signo) {
     
 }
 int main(int argc, char *argv[]) {
+
     if (argc != 4) {
         return 1;
     }
-
+    
     PAGE_SIZE = atoi(argv[1]);
     FRAME_SIZE = atoi(argv[2]);
     char* search_type = argv[3];
     printf("%s\n", search_type);
     if (strcmp(search_type, "random") == 0){
+    	search_function = random_pick;
+    }
+    else if (strcmp(search_type, "nfu") == 0){
+    	search_function = nfu;
+    }
+    else if (strcmp(search_type, "aging") == 0){
+    	search_function = aging;
+    }
+    else{
+    	printf("uncknown algorithm, setting random as default\n");
     	search_function = random_pick;
     }
 
@@ -101,6 +145,8 @@ int main(int argc, char *argv[]) {
         page_table[i].frame = -1;
         page_table[i].dirty = false;
         page_table[i].referenced = 0;
+        page_table[i].reference_count = 0;
+        page_table[i].count = 0;
     }
     printf("Pager pid is %d\n", getpid());
     
