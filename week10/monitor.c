@@ -52,7 +52,7 @@ void monitor_directory(const char* path) {
         exit(EXIT_FAILURE);
     }
 
-    int watch_desc = inotify_add_watch(inotify_fd, path, IN_MODIFY | IN_CREATE | IN_DELETE);
+    int watch_desc = inotify_add_watch(inotify_fd, path, IN_ACCESS | IN_MODIFY | IN_CREATE | IN_DELETE | IN_OPEN);
     if (watch_desc == -1) {
         perror("inotify_add_watch");
         exit(EXIT_FAILURE);
