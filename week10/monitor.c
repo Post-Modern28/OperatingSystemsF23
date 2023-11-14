@@ -85,10 +85,11 @@ int main(int argc, char *argv[]) {
 
     signal(SIGINT, handle_sigint);
 
-    //print_all_stat_info(argv[1]);
-	monitor_directory(argv[1]);
+    print_all_stat_info(argv[1]);
+	
     while (1) {
-        sleep(5);
+    	monitor_directory(argv[1]);
+        sleep(1);
     }
 
     return 0;
