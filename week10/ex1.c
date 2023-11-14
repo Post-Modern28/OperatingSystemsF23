@@ -82,6 +82,9 @@ void create_sym_link(const char* source, const char* link) {
     }
 }
 
+
+
+
 int main(int argc, char *argv[]) {
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <watched_directory>\n", argv[0]);

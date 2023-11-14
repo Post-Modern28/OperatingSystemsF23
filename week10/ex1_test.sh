@@ -2,29 +2,21 @@
 gcc ex1.c -o ex1
 gcc monitor.c -o monitor
 
-./monitor "/home/user/For_lab_10" &
+./monitor "~/" &
 sleep 1
 monitor_pid=$!
 echo "monitor pid is:"
 echo $monitor_pid
-./ex1 "/home/user/For_lab_10" &
+./ex1 "~/" &
 sleep 1
 
-cd /home/user/For_lab_10
-
-echo "Hello world." > myfile1.txt
-ln myfile1.txt myfile11.txt
-ln myfile1.txt myfile12.txt
-
-./ex1 watched_dir
-
-mv myfile1.txt /tmp/myfile1.txt
-
-echo "Modified content" > myfile11.txt
-
-ln -s /tmp/myfile1.txt myfile13.txt
-
-echo "New content" > /tmp/myfile1.txt
-
-./ex1 watched_dir
-
+mkdir folder1
+echo > f1.txt
+echo > f2.txt
+ls folder1
+cat f1.txt
+echo "Hello" >> f2.txt
+touch f1.txt
+rm f1.txt
+chmod u=w folder1
+rm -r folder1

@@ -5,6 +5,7 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <sys/inotify.h>
 
 void print_stat_info(const char* path) {
     struct stat fileStat;
@@ -43,6 +44,39 @@ void handle_sigint(int sig) {
     exit(EXIT_SUCCESS);
 }
 
+
+void monitor_directory(const char* path) {
+    int inotify_fd = inotify_init();
+    if (inotify_fd == -1) {
+        perror("inotify_init");
+        exit(EXIT_FAILURE);
+    }
+
+    int watch_desc = inotify_add_watch(inotify_fd, path, IN_MODIFY | IN_CREATE | IN_DELETE);
+    if (watch_desc == -1) {
+        perror("inotify_add_watch");
+        exit(EXIT_FAILURE);
+    }
+
+    char buf[4096];
+    ssize_t num_read;
+    while (1) {
+        num_read = read(inotify_fd, buf, sizeof(buf));
+        if (num_read == 0) {
+            fprintf(stderr, "No events\n");
+        }
+        if (num_read == -1) {
+            perror("read");
+            exit(EXIT_FAILURE);
+        }
+
+        printf("File change detected\n");
+        print_all_stat_info(path);
+    }
+
+    close(inotify_fd);
+}
+
 int main(int argc, char *argv[]) {
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <watched_directory>\n", argv[0]);
@@ -51,8 +85,8 @@ int main(int argc, char *argv[]) {
 
     signal(SIGINT, handle_sigint);
 
-    print_all_stat_info(argv[1]);
-
+    //print_all_stat_info(argv[1]);
+	monitor_directory(argv[1]);
     while (1) {
         sleep(5);
     }
