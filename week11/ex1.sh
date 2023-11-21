@@ -39,7 +39,7 @@ done
 gcc ex1.c -o ex1
 sudo cp ./ex1 ./lofsdisk/
 sudo chroot ./lofsdisk/ /bin/bash -c "/ex1" >> ex1.txt 2>&1
-#sudo sh -c 'chroot lofsdisk ex1 > ex1.txt'
+
 
 # Run the program ex1 again without changing the root directory and append the output to the file ex1.txt
 sudo ./ex1 >> ex1.txt 2>&1
