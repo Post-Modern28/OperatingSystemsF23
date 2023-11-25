@@ -75,7 +75,7 @@ int main(){
 				printf("REPEATING CHARACHTER 0x%04x(%d)\n", ev.code, ev.code);
 				char_repeated[ev.code] = 1;
 			}
-			for (int i = 0; i < N; i++){ // I added this cycle because previous conditional branch may not always work (if 2 charachters are were pressed and held simultaneously)
+			for (int i = 0; i < N; i++){ // I added this cycle because previous conditional branch may not always work (if 2 charachters were pressed and held simultaneously)
 				if (char_pressed[i] && i != ev.code){
 					char_repeated[i] = 1;
 				}
